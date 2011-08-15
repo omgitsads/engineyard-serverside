@@ -184,10 +184,10 @@ module EY
           info "~> Rolling back to previous release: #{short_log_message(revision)}"
 
           run_with_callbacks(:symlink)
-          sudo "rm -rf #{rolled_back_release}"
           bundle
           info "~> Restarting with previous release"
           with_maintenance_page { run_with_callbacks(:restart) }
+          sudo "rm -rf #{rolled_back_release}"
         else
           info "~> Already at oldest release, nothing to roll back to"
           exit(1)
