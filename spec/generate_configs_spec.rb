@@ -40,16 +40,18 @@ end
 
 describe "generate database.yml for a solo" do
   def deploy_with_gemfile(db_gemfile_folder, db_type, cluster_type = :solo, config_overrides = {})
-    @deploy_dir = Dir.mktmpdir("serverside-deploy-#{Time.now.to_i}-#{$$}")
+    tmp = "serverside-deploy-#{Time.now.to_i}-#{$$}"
+    @deploy_dir = Dir.mktmpdir(tmp)
 
     # set up EY::Serverside::Server like we're on a solo
+    roles = %w[solo]
     EY::Serverside::Server.reset
-    EY::Serverside::Server.add(:hostname => 'localhost', :roles => %w[solo])
+    server = EY::Serverside::Server.add(:hostname => 'localhost', :roles => roles)
 
     setup_dna_json(:cluster_type => cluster_type, :db_stack_name => db_type)
 
     # run a deploy
-    config = EY::Serverside::Deploy::Configuration.new(config_overrides.merge({
+    @config = EY::Serverside::Deploy::Configuration.new(config_overrides.merge({
         "strategy"      => "GenerateDatabaseYmlIntegrationSpec",
         "deploy_to"     => @deploy_dir,
         "group"         => `id -gn`.strip,
@@ -59,7 +61,18 @@ describe "generate database.yml for a solo" do
         'framework_env' => 'production'
       }))
 
+    FileUtils.mkdir_p(@config.release_path)
     FileUtils.mkdir_p(File.join(@deploy_dir, 'shared'))
+
+    gemfile_lock = File.expand_path("../fixtures/gemfiles/#{db_gemfile_folder}/Gemfile.lock", __FILE__)
+    if config_overrides[:keepfile_base]
+      FileUtils.cp_r(File.expand_path("../fixtures/gemfiles/#{db_gemfile_folder}/config", __FILE__), @config.release_path)
+      `touch #{@config.release_path}/config/keep.database.yml`
+      FileUtils.cp_r(File.expand_path("../fixtures/gemfiles/#{db_gemfile_folder}/config", __FILE__), File.join(@deploy_dir, config_overrides[:keepfile_base]))
+    end
+
+    FileUtils.mkdir_p(File.join(@config.release_path, 'config'))
+    FileUtils.cp(gemfile_lock, @config.release_path)
     Dir.chdir(File.join(@deploy_dir, 'shared')) do
       # pretend there is a shared bundled_gems directory
       FileUtils.mkdir_p('bundled_gems')
@@ -69,14 +82,17 @@ describe "generate database.yml for a solo" do
       end
 
       FileUtils.mkdir_p('config')
-      `touch config/keep.database.yml` if config_overrides[:keepfile_base] == 'shared'
+      if config_overrides[:keepfile_base] == 'shared'
+        `touch config/keep.database.yml`
+      end
     end
 
     @binpath = $0 = File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 'engineyard-serverside'))
-    @deployer = FullTestDeploy.new(config)
+    @deployer = FullTestDeploy.new(@config)
     @deployer.db_gemfile_folder = db_gemfile_folder
     @deployer.db_keepfile = config_overrides[:keepfile_base] == 'shared/cached-copy'
-    @deployer.deploy
+
+    @deployer.generate_database_yml(@config.release_path)
   end
 
   [
@@ -91,7 +107,7 @@ describe "generate database.yml for a solo" do
     it "from Gemfile tagged '#{db_gemfile_folder}' generates a database.yml with adapter #{expected_adapter}" do
       deploy_with_gemfile(db_gemfile_folder, db_type)
 
-      database_yml_file = File.join(@deploy_dir, 'current', 'config', 'database.yml')
+      database_yml_file = File.join(@config.release_path, 'config', 'database.yml')
       File.exist?(database_yml_file).should be_true
       database_yml = File.read(database_yml_file)
 
@@ -121,7 +137,7 @@ describe "generate database.yml for a solo" do
       host:      solo.compute-1.amazonaws.com
       reconnect: true
     EOS
-    File.read(File.join(@deploy_dir, 'current', 'config', 'database.yml')).should == expected
+    File.read(File.join(@config.release_path, 'config', 'database.yml')).should == expected
   end
 
   it "separate db_master instance and slave instances" do
@@ -150,7 +166,7 @@ describe "generate database.yml for a solo" do
       host:      db_slave2.compute-1.amazonaws.com
       reconnect: true
     EOS
-    File.read(File.join(@deploy_dir, 'current', 'config', 'database.yml')).should == expected
+    File.read(File.join(@config.release_path, 'config', 'database.yml')).should == expected
   end
 
   it "generates a database.yml even if file already exists" do
@@ -165,7 +181,7 @@ describe "generate database.yml for a solo" do
       host:      solo.compute-1.amazonaws.com
       reconnect: true
     EOS
-    File.read(File.join(@deploy_dir, 'current', 'config', 'database.yml')).should == expected
+    File.read(File.join(@config.release_path, 'config', 'database.yml')).should == expected
   end
 
   %w[shared shared/cached-copy].each do |base|
@@ -181,7 +197,7 @@ describe "generate database.yml for a solo" do
         host:      localhost
         reconnect: true
       EOS
-      File.read(File.join(@deploy_dir, 'current', 'config', 'database.yml')).should == expected
+      File.read(File.join(@config.release_path, 'config', 'database.yml')).should == expected
     end
   end
 end
