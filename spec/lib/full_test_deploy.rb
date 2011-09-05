@@ -59,7 +59,7 @@ class FullTestDeploy < EY::Serverside::Deploy
     ENV.replace(my_env)
     result
   end
-  
+
   # we're probably running this spec under bundler, but a real
   # deploy does not
   def gems_include?(*gems)
@@ -73,10 +73,14 @@ class FullTestDeploy < EY::Serverside::Deploy
     ENV.replace(my_env)
     result
   end
-  
 
   def get_bundler_installer(lockfile, options = '')
     super(lockfile, ' --local --quiet')
+  end
+
+  def bundler_10_installer(version, options = '')
+    options << ' --local --quiet' unless options.include?('--local')
+    super(version, options)
   end
 
 end
