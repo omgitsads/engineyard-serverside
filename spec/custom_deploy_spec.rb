@@ -1,5 +1,4 @@
 require File.dirname(__FILE__) + '/spec_helper'
-require 'tmpdir'
 require 'fileutils'
 
 describe "the EY::Serverside::Deploy API" do

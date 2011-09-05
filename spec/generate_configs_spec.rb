@@ -40,7 +40,7 @@ end
 
 describe "generate database.yml for a solo" do
   def deploy_with_gemfile(db_gemfile_folder, db_type, cluster_type = :solo, config_overrides = {})
-    @deploy_dir = File.join(Dir.tmpdir, "serverside-deploy-#{Time.now.to_i}-#{$$}")
+    @deploy_dir = Dir.mktmpdir("serverside-deploy-#{Time.now.to_i}-#{$$}")
 
     # set up EY::Serverside::Server like we're on a solo
     EY::Serverside::Server.reset

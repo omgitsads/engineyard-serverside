@@ -241,11 +241,11 @@ module EY
         sudo "chown -R #{c.user}:#{c.group} #{release_to_link}"
         run "if [ -f \"#{c.shared_path}/config/newrelic.yml\" ]; then ln -nfs #{c.shared_path}/config/newrelic.yml #{release_to_link}/config/newrelic.yml; fi"
       end
-      
+
       def generate_configs(release_to_link=c.release_path)
         generate_database_yml(release_to_link)
       end
-      
+
       # Do nothing if there is no Gemfile.lock to determine what ORM gems are being used
       # (falls back to using the symlinked shared/database.yml file)
       def generate_database_yml(release_to_link)
@@ -256,7 +256,7 @@ module EY
           node         = EY::Serverside.node
           node_app     = node["engineyard"]["environment"]["apps"].find { |app| app['name'] == c['app'] }
           abort("Invalid application name for target environment: #{c['app']}") unless node_app
-      
+
           db_stack_name   = node[:engineyard][:environment][:db_stack_name]
           instances       = node[:engineyard][:environment][:instances]
           db_master       = {"public_hostname" => "localhost"} # you know, just in case
@@ -271,7 +271,7 @@ module EY
           end
           db_host         = db_master["public_hostname"]
           db_slaves_hosts = db_slaves.map {|slave| slave["public_hostname"]}
-          
+
           if config["db_adapter"]
             adapter = config["db_adapter"]
           elsif bundler_gems_include?("mysql2")
@@ -289,7 +289,7 @@ module EY
           else
             adapter = "mysql"
           end
-        
+
           File.open(database_yml, "w") do |file|
             contents = <<-EOS.gsub(/^\s{12}/, '')
             #{node[:engineyard][:environment][:framework_env]}:
@@ -404,11 +404,11 @@ module EY
         info "!> This deployment will use bundler #{missing_lock_version} to run 'bundle install'."
         info "!>"
       end
-      
+
       def keep_database_yml?(release_to_link=c.release_path)
         File.exists?(File.join(release_to_link, "config", "keep.database.yml"))
       end
-      
+
       # returns true if "bundle list" includes all gems requested
       def bundler_gems_include?(*gems)
         lockfile = File.join(c.release_path, "Gemfile.lock")
@@ -422,7 +422,7 @@ module EY
         #       activesupport (= 3.0.10)
         #       builder (~> 2.1.2)
         #       i18n (~> 0.5.0)
-        # 
+        #
         gems.inject(true) {|found_all, gem| found_all && (@lockfile_contents =~ / #{gem} \(/)}
       end
 
