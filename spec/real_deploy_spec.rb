@@ -84,12 +84,19 @@ describe "deploying an application" do
 
     # pretend there is a shared bundled_gems directory
     FileUtils.mkdir_p(File.join(@deploy_dir, 'shared', 'bundled_gems'))
-    %w(RUBY_VERSION SYSTEM_VERSION).each do |name| 
+    %w(RUBY_VERSION SYSTEM_VERSION).each do |name|
       File.open(File.join(@deploy_dir, 'shared', 'bundled_gems', name), "w") { |f| f.write("old\n") }
     end
 
     @binpath = $0 = File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 'engineyard-serverside'))
+
+
     @deployer = FullTestDeploy.new(config)
+    @deployer.instance_eval do
+      def generate_database_yml(path)
+        `touch #{File.join(path, 'config', 'database.yml')}`
+      end
+    end
     @deployer.deploy
   end
 
@@ -134,11 +141,11 @@ describe "deploying an application" do
     clear_bundle_cmd = @deployer.commands.grep(/rm -Rf \S+\/bundled_gems/).first
     clear_bundle_cmd.should_not be_nil
   end
-  
+
   it "generates a database.yml file" do
     File.exist?(File.join(@deploy_dir, 'current', 'config', 'database.yml')).should be_true
   end
-  
+
   it "runs all the hooks" do
     File.exist?(File.join(@deploy_dir, 'current', 'before_bundle.ran' )).should be_true
     File.exist?(File.join(@deploy_dir, 'current', 'after_bundle.ran'  )).should be_true

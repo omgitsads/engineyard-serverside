@@ -31,7 +31,7 @@ describe "the EY::Serverside::Deploy API" do
       def conditionally_enable_maintenance_page()  @call_order << 'conditionally_enable_maintenance_page'  end
       def disable_maintenance_page()               @call_order << 'disable_maintenance_page'               end
 
-      def generate_database_yml() end
+      def generate_database_yml(path) end
     end
 
     setup_dna_json
