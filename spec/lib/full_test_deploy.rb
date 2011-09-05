@@ -75,10 +75,8 @@ class FullTestDeploy < EY::Serverside::Deploy
   end
   
 
-  def get_bundler_installer(lockfile)
-    installer = super
-    installer.options << '--local --quiet'   # stfu already!
-    installer
+  def get_bundler_installer(lockfile, options = '')
+    super(lockfile, ' --local --quiet')
   end
 
 end

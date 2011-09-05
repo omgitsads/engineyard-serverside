@@ -137,9 +137,9 @@ module EY
           bundler_installer = if File.exist?(lockfile)
                                 get_bundler_installer(lockfile)
                               else
-                                missing_lock_version = EY::Serverside::LockfileParser::Parse09::DEFAULT
+                                missing_lock_version = EY::Serverside::LockfileParser::Parse10::DEFAULT
                                 warn_about_missing_lockfile missing_lock_version
-                                bundler_09_installer missing_lock_version
+                                bundler_10_installer missing_lock_version
                               end
 
           sudo "#{$0} _#{EY::Serverside::VERSION}_ install_bundler #{bundler_installer.version}"
@@ -426,26 +426,27 @@ module EY
         gems.inject(true) {|found_all, gem| found_all && (@lockfile_contents =~ / #{gem} \(/)}
       end
 
-      def get_bundler_installer(lockfile)
+      def get_bundler_installer(lockfile, options = '')
         parser = LockfileParser.new(File.read(lockfile))
         case parser.lockfile_version
         when :bundler09
-          bundler_09_installer(parser.bundler_version)
+          bundler_09_installer(parser.bundler_version, options)
         when :bundler10
-          bundler_10_installer(parser.bundler_version)
+          bundler_10_installer(parser.bundler_version, options)
         else
           raise "Unknown lockfile version #{parser.lockfile_version}"
         end
       end
       public :get_bundler_installer
 
-      def bundler_09_installer(version)
-        BundleInstaller.new(version, '--without=development --without=test')
+      def bundler_09_installer(version, options = '')
+        default_options = '--without=development --without=test'
+        BundleInstaller.new(version, default_options + options)
       end
 
-      def bundler_10_installer(version)
-        BundleInstaller.new(version,
-          "--deployment --path #{c.shared_path}/bundled_gems --binstubs #{c.binstubs_path} --without development test")
+      def bundler_10_installer(version, options = '')
+        default_options = "--deployment --path #{c.shared_path}/bundled_gems --binstubs #{c.binstubs_path} --without development test"
+        BundleInstaller.new(version, default_options + options)
       end
     end   # DeployBase
 
