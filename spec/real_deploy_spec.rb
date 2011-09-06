@@ -91,11 +91,11 @@ describe "deploying an application" do
     @binpath = $0 = File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 'engineyard-serverside'))
 
     @deployer = FullTestDeploy.new(config)
-    @deployer.instance_eval do
-      def generate_database_yml(path)
-        `touch #{File.join(path, 'config', 'database.yml')}`
-      end
-    end
+    #@deployer.instance_eval do
+    #  def generate_database_yml(path)
+    #    `touch #{File.join(path, 'config', 'database.yml')}`
+    #  end
+    #end
     @deployer.deploy
   end
 
