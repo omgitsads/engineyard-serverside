@@ -62,7 +62,7 @@ end
 
 describe "deploying an application" do
 
-  before do
+  before(:all) do
     @deploy_dir = Dir.mktmpdir("serverside-deploy-#{Time.now.to_i}-#{$$}")
 
     # set up EY::Serverside::Server like we're on a solo

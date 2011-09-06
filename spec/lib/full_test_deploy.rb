@@ -75,11 +75,11 @@ class FullTestDeploy < EY::Serverside::Deploy
   end
 
   def get_bundler_installer(lockfile, options = '')
-    super(lockfile, ' --local --quiet')
+    super(lockfile, ' --quiet')
   end
 
   def bundler_10_installer(version, options = '')
-    options << ' --local --quiet' unless options.include?('--local')
+    options << ' --quiet' unless options.include?('--quiet')
     super(version, options)
   end
 
