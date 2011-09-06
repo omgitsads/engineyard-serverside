@@ -62,7 +62,7 @@ end
 
 describe "deploying an application" do
 
-  before(:all) do
+  before do
     @deploy_dir = Dir.mktmpdir("serverside-deploy-#{Time.now.to_i}-#{$$}")
 
     # set up EY::Serverside::Server like we're on a solo
@@ -89,7 +89,6 @@ describe "deploying an application" do
     end
 
     @binpath = $0 = File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin', 'engineyard-serverside'))
-
 
     @deployer = FullTestDeploy.new(config)
     @deployer.instance_eval do

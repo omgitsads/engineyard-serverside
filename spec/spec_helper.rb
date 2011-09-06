@@ -92,6 +92,7 @@ def dna_instances_for(cluster_type = :solo)
 end
 
 Spec::Runner.configure do |config|
+  config.add_options ['-fs']
   config.before(:all) do
     EY::Serverside.dna_json = {}.to_json
   end
