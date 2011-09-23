@@ -10,7 +10,7 @@ describe "Deploying an application that uses Node.js and NPM" do
 
     # run a deploy
     config = EY::Serverside::Deploy::Configuration.new({
-        "strategy"      => "IntegrationSpec",
+        "strategy"      => "NodeIntegrationSpec",
         "deploy_to"     => @deploy_dir,
         "group"         => `id -gn`.strip,
         "stack"         => 'nginx_nodejs',
@@ -28,7 +28,6 @@ describe "Deploying an application that uses Node.js and NPM" do
   end
 
   it "runs 'npm install'" do
-    pending "Node.js app fixture needed"
     install_cmd = @deployer.commands.grep(/npm install/).first
     install_cmd.should_not be_nil
   end
